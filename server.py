@@ -28,12 +28,15 @@ except socket.error as e:
 s.listen(2)
 print("waiting for client, server started")
 
-pos = [250,450]
+default_x = 250
+default_y = 450
+pos = [default_x,default_y]
 
 turn = 1
 
 block = Block((0,0,0),0,0)
 block.matrix = block.genblock()
+
 def threaded_client2(conn, game: Game, pos ,player: int):
     
     # temp green
@@ -66,14 +69,18 @@ def threaded_client2(conn, game: Game, pos ,player: int):
                 print(pos)
                 
                 if data[2] == True:
-                    game.player_turn = game.player_turn ^ 1
-                    block.matrix = block.genblock()
+                    if game.placeBlock((data[1]//45, data[0]//50), block.matrix): 
+                        
+                        game.player_turn = game.player_turn ^ 1
+                        block.matrix = block.genblock()
+                        
+                    pos[0],pos[1] = default_x, default_y
 
                 else:
                     if game.player_turn == player:
                         pos[0], pos[1] = data[0],data[1]
                          
-                    reply = [block.matrix, color, pos[0],pos[1], game.player_turn]
+                reply = [block.matrix, color, pos[0],pos[1], game.player_turn]
 
                 print("recieved: ", data)
                 print("sending: ", reply)
@@ -108,34 +115,6 @@ def recv_buf(s: socket.socket):
     
     return pickle.loads(data)
      
-def threaded_client(conn, player):
-    conn.send(str.encode(make_pos(pos[player])))
-    reply = ""
-    
-    while True:
-        try:
-            data = read_pos(conn.recv(2048).decode())
-            pos[player] = data
-            
-            if not data:
-                print("Disconnected")
-                break
-            else:
-                if player == 1:
-                    reply = pos[0]
-                else:
-                    reply = pos[1]
-                print("Recieved: ", data)
-                print("Sending: ", reply)
-            
-            conn.sendall(str.encode(make_pos(reply)))
-        except: 
-            break
-    print("Lost Connection")
-    conn.close()
-    sys.exit()
-
-
 max_player = 3
 player_num = 0
 g = Game()

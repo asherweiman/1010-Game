@@ -65,12 +65,14 @@ def main():
         end_turn = False
         if block_data[0] != startBlock.matrix:
             startBlock =  Block(block_data[1],(width//10)*3,(height//10)*3, block_data[0])
-
-        if player_num != block_data[4]:
+            placed_list.add(startBlock)
             
+        if player_num != block_data[4]:
+        
             startBlock.rect.x = block_data[2]
             startBlock.rect.y = block_data[3]
-        
+            startBlock.placeBlock()
+            
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False

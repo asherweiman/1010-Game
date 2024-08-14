@@ -85,12 +85,14 @@ class Block(pg.sprite.Sprite):
 class Game:
     
     def __init__(self) -> None:
-        self.p1Move = None
-        self.p2Move = None
-        self.ready = False
+        # migth not need this self.p1Move = None
+        # might not need this self.p2Move = None
+        # TODO self.ready = False
         self.board = [[0 for i in range(10)] for i in range(10)]
         self.totalmoves: int = 0
+        # TODO 
         self.wins: int = 0
+        
         self.player_turn = 0
 
     def connected(self):
@@ -139,7 +141,6 @@ class Game:
                 
         return out
         
-    
     def checkBoard(self) -> bool:
         
         # clear rows
@@ -171,7 +172,7 @@ class Game:
         return lose            
     
     
-    
+# testing game board  
 """g = Game()
 b = Block(width=10,height=10)
 

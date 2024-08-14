@@ -1,31 +1,41 @@
 import socket
-
-
+import pickle
+from struct import pack, unpack
 
 class Network:
     def __init__(self) -> None:
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server = "127.0.0.1" #"192.168.48.1"
-        self.port = 5555
+        self.server = ""#"192.168.1.1" #"192.168.48.1"
+        self.port = 8080
+        self.buffer_size = 2048
         self.addr = (self.server, self.port)
-        self.pos = self.connect()
         #print("self.pos: ", self.pos)
-    
+        self.client.connect(self.addr)
+        
     def connect(self):
         try:
-            self.client.connect(self.addr)
-            return self.client.recv(2048).decode()
-        except:
-            pass
+            
+            buf = b''
+            while len(buf) < 4:
+                buf += self.client.recv(4 - len(buf))
+            length = unpack('!I',buf)[0]
+            
+            data = self.client.recv(length)
+            
+            return pickle.loads(data)   
+        except socket.error as e:
+            print(e)
             
     def send(self, data):
         try: 
-            self.client.send(str.encode(data))
-            return self.client.recv(2048).decode()
+            packet = pickle.dumps(data)
+            length = pack('!I', len(packet))
+            packet = length + packet
+            self.client.sendall(packet)
         except socket.error as e:
             print(e)
     
-    def getPos(self):
-        return self.pos
+    def getBlock(self):
+        return self.connect()
     
     

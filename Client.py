@@ -1,9 +1,11 @@
 import pygame 
 import os
 import sys
+from game import Block
 
-file_dir = os.path.dirname("TechWTimTutorial-onlineGame")
-sys.path.append(file_dir)
+
+#file_dir = os.path.dirname("TechWTimTutorial-onlineGame")
+#sys.path.append(file_dir)
 from Network import Network
 
 
@@ -11,79 +13,98 @@ width = height= 500
 win = pygame.display.set_mode((width,height))
 pygame.display.set_caption("Client")
 
+square_size = (width//10, int(height*.9)//10)
 clientnumber = 0
 
-class Player:
-    def __init__(self,x,y,width,height,color):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.color = color
-        self.rect = (x,y,width,height)
-        self.vel = 3
     
-    def draw(self,win):
-        pygame.draw.rect(win,self.color,self.rect)
+def drawBoard(width,height):
+    surf = pygame.surface.Surface((width,height))
     
-    def move(self):
+    white = (255,255,255)
+    grey = (105,105,105)
+    
+    surf.fill(white)
+    
+    col = width//10
+    row = height//10
+    for i in range(0,width,col):
         
-        keys = pygame.key.get_pressed()
-        
-        if keys[pygame.K_LEFT]:
-            # self.width -= self.vel
-            self.x -= self.vel
-        if keys[pygame.K_RIGHT]:
-            # self.width += self.vel
-            self.x += self.vel
-        if keys[pygame.K_UP]:
-            # self.height -= self.vel
-            self.y -= self.vel
-        
-        if keys[pygame.K_DOWN]:
-            # self.height += self.vel
-            self.y += self.vel
-        self.update()
-        
-    def update(self):  
-        self.rect = (self.x, self.y, self.width, self.height)
+        pygame.draw.line(surf, grey,start_pos=(i+col,0),end_pos=(i+col,height))
 
-def read_pos(str):
-    str = str.split(",")
-    return int(str[0]), int(str[1])
-
-def make_pos(tup):
-    return str(tup[0]) + "," + str(tup[1])
-    
+    for i in range(0,height,row):
         
-def redrawWindow(win,player, player2):
-    win.fill((255,255,255))
-    player.draw(win)
-    player2.draw(win)
-    pygame.display.update()
-    
+        pygame.draw.line(surf, grey,start_pos=(0,i+row),end_pos=(width,i+row))
+    return surf
+
+ 
 def main():
+    #pygame.init()
     run = True
     n = Network()
     print("made network")
-    startPos = read_pos(n.getPos())
-    print(startPos)
-    p = Player(startPos[0],startPos[1],100,100, (0,255,0))
-    p2 = Player(0,0,100,100, (255,100,0))
-    clock = (pygame.time.Clock())
+    
+    clock = pygame.time.Clock()
+    
+    game_board = drawBoard(width, int(height*.9))
+    win.blit(game_board,(0,0))
+    
+    block_data = n.getBlock()
+    print("here", block_data)
+    startBlock = Block(block_data[1],(width//10)*3,(height//10)*3, block_data[0])
+    
+    player_num = block_data[4]
+    
+    dragging_list = pygame.sprite.Group()
+    
+    placed_list = pygame.sprite.Group()
+    placed_list.add(startBlock)
     
     while run:
-        clock.tick(60)
-        p2Pos = read_pos(n.send(make_pos((p.x, p.y))))
-        p2.x = p2Pos[0]
-        p2.y = p2Pos[1]
-        p2.update()
+        
+        
+        end_turn = False
+        if block_data[0] != startBlock.matrix:
+            startBlock =  Block(block_data[1],(width//10)*3,(height//10)*3, block_data[0])
+
+        if player_num != block_data[4]:
+            
+            startBlock.rect.x = block_data[2]
+            startBlock.rect.y = block_data[3]
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
-        p.move()
-        redrawWindow(win, p, p2)
+            elif event.type == pygame.MOUSEBUTTONDOWN and player_num == block_data[4]:
+                
+                mouse_x, mouse_y = pygame.mouse.get_pos() 
+                
+                if startBlock.rect.collidepoint(mouse_x, mouse_y) and not startBlock.placed:
+                    dragging_list.add(startBlock)
+                    placed_list.remove(startBlock)
+            
+            elif event.type == pygame.MOUSEBUTTONUP and dragging_list.has(startBlock):
+                placed_list.add(startBlock)
+                dragging_list.empty()
+                startBlock.placeBlock()
+                
+                end_turn = True
+                
+            elif event.type == pygame.MOUSEMOTION:
+                dragging_list.update(event.rel)
         
+        x, y = startBlock.rect.topleft
+        n.send([x,y,end_turn])
+        
+          
+        win.fill((255,255,255))      
+        win.blit(game_board,(0,0))
+        
+        placed_list.draw(win)
+        dragging_list.draw(win)
+        pygame.display.update()
+        
+        clock.tick(60)
+        
+        block_data = n.connect()
 main()

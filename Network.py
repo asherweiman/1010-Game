@@ -9,12 +9,12 @@ class Network:
         self.port = 8080
         self.buffer_size = 2048
         self.addr = (self.server, self.port)
-        #print("self.pos: ", self.pos)
         self.client.connect(self.addr)
         
     def connect(self):
         try:
-            
+            # get length data from buffer
+            print("getting new msg")
             buf = b''
             while len(buf) < 4:
                 buf += self.client.recv(4 - len(buf))
@@ -28,6 +28,7 @@ class Network:
             
     def send(self, data):
         try: 
+            # pad buffer w/ length of data
             packet = pickle.dumps(data)
             length = pack('!I', len(packet))
             packet = length + packet

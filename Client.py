@@ -1,11 +1,6 @@
 import pygame 
-import os
 import sys
 from game import Block, Game
-
-
-#file_dir = os.path.dirname("TechWTimTutorial-onlineGame")
-#sys.path.append(file_dir)
 from Network import Network
 
 
@@ -13,6 +8,9 @@ width = height= 500
 
 square_size = (width//10, int(height*.9)//10)
 clientnumber = 0
+default_x = 250
+default_y = 450
+
 
     
 def drawBoard(width,height):
@@ -32,6 +30,7 @@ def drawBoard(width,height):
     for i in range(0,height,row):
         
         pygame.draw.line(surf, grey,start_pos=(0,i+row),end_pos=(width,i+row))
+    
     return surf
 
  
@@ -50,7 +49,7 @@ def main():
     
     block_data = n.getBlock()
     print("here", block_data)
-    startBlock = Block(block_data[1],(width//10)*3,(height//10)*3, block_data[0])
+    startBlock = Block(block_data[1],(width//10)*3,(height//10)*3, block_data[0], default_x,default_y)
     
     pygame.display.set_caption(str(block_data[4]))
     
@@ -62,28 +61,33 @@ def main():
     placed_list.add(startBlock)
     
     while run:
-        
-        
+         
         end_turn = False
         
+        # start of new turn
         if block_data[0] != startBlock.matrix:
+            print("new turn")
             (x,y) = startBlock.rect.topleft
-            game.placeBlock((x//50,y//45),startBlock.matrix)
-            startBlock =  Block(block_data[1],(width//10)*3,(height//10)*3, block_data[0])
+            game.placeBlock((y//45,x//50),startBlock)
+            lose_game = game.endTurn(startBlock)
+            #print(lose_game)
+            game_board = game.drawBoard(game_board)
+            startBlock =  Block(block_data[1],(width//10)*3,(height//10)*3, block_data[0],default_x,default_y)
             placed_list.add(startBlock)
-            
+           
+        # not this players turn only moves sprite around 
         if player_num != block_data[4]:
             
             startBlock.rect.x = block_data[2]
             startBlock.rect.y = block_data[3]
             startBlock.placeBlock()
-            
+          
         for event in pygame.event.get():
             
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
-                
+                           
             elif event.type == pygame.MOUSEBUTTONDOWN and player_num == block_data[4]:
                 
                 mouse_x, mouse_y = pygame.mouse.get_pos() 
@@ -93,7 +97,7 @@ def main():
                     placed_list.remove(startBlock)
             
             elif event.type == pygame.MOUSEBUTTONUP and dragging_list.has(startBlock):
-                placed_list.add(startBlock)
+                #placed_list.add(startBlock)
                 dragging_list.empty()
                 startBlock.placeBlock()
                  
@@ -123,17 +127,11 @@ def main():
         if end_turn and block_data[4] == player_num:
             startBlock.placed = False
             startBlock.rect.x = block_data[2]
-            startBlock.rect.y = block_data[3]   
-        elif end_turn:
-            print("here")
-            game.placeBlock((x//50,y//45),startBlock.matrix)
-
-        print("\n")
-        for i in game.board:
-            print(i)
-        print("\n")
-        
+            startBlock.rect.y = block_data[3]  
+            placed_list.add(startBlock)   
+            
+       
     print("end game")   
-     
+    sys.exit()
        
 main()

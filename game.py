@@ -3,12 +3,12 @@ import pygame as pg
 
 class Block(pg.sprite.Sprite):
     
-    def __init__(self, color=(0,0,0), width = None, height = None, matrix = None):
+    def __init__(self, color=(0,0,0), width = 0, height = 0, matrix = [],x=0,y=0):
         pg.sprite.Sprite.__init__(self)
         
         self.color = color
         
-        if matrix:
+        if len(matrix) != 0:
             self.matrix = matrix
         else:
             self.matrix = self.genblock()
@@ -22,6 +22,8 @@ class Block(pg.sprite.Sprite):
         self.draw_matrix()
         
         self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
         
     # draws block on sprite image surface
     def draw_matrix(self):
@@ -100,6 +102,7 @@ class Game:
         
         # colors 
         self.color_pallete = [(255,255,255),
+                              (0,0,0),
                               (35,110,35),
                               (188,210,208),
                               (210,208,188),
@@ -110,7 +113,38 @@ class Game:
         return self.ready
 
     def pickColor(self):
-        return self.color_pallete[randint(1, len(self.color_pallete) - 1)]
+        return self.color_pallete[randint(2, len(self.color_pallete) - 1)]
+    
+    def drawBoard(self, win: pg.Surface):
+        
+        block_width = win.get_width()//10
+        block_height = win.get_height()//10
+        grey = (105,105,105)
+        white = (255,255,255)
+        win.fill((white))
+        
+        
+        # draw blocks:
+        for row in range(len(self.board)):
+            for col in range(len(self.board)):
+                print("color: ", self.board[row][col])
+                pg.draw.rect(win,
+                             self.color_pallete[self.board[row][col]],
+                             pg.Rect((col*block_width,row*block_height),(block_width,block_height)))
+        
+        # draw lines:
+        
+        for i in range(0,win.get_width(),block_width):
+        
+            pg.draw.line(win, grey,start_pos=(i+block_width,0),end_pos=(i+block_width,win.get_height()))
+
+        for i in range(0,win.get_height(),block_height):
+        
+            pg.draw.line(win, grey,start_pos=(0,i+block_height),end_pos=(win.get_width(),i+ block_height))
+        
+        
+        return win
+    
     
     def notOccupied(self,row,col,block):
         out = True
@@ -126,17 +160,20 @@ class Game:
                 j = 0
                 while j < len(block[i]) and j + col < len(self.board):
                    
-                    if block[i][j] == 1 and self.board[row+i][col+j] == 1:
+                    if block[i][j] > 0 and self.board[row+i][col+j] > 0:
                         return False
                     j += 1
                 i += 1
                 
         return out
      
-    def placeBlock(self, top_left,block_matrix) -> bool:
+    def placeBlock(self, top_left, block: Block) -> bool:
+      
+        block_matrix = block.matrix
         out = False
         (row,col) = top_left
-        
+        color_val = self.color_pallete.index(block.color)
+        print(row,col)
         if (9 >= row >= 0) and (9 >= col>= 0):
             
             #print(self.notOccupied(row,col,block_matrix))
@@ -147,20 +184,21 @@ class Game:
                 while i < len(block_matrix) and i + row < len(self.board):
                     j = 0
                     while j < len(block_matrix[i]) and j + col < len(self.board):
-                        if block_matrix[i][j] == 1:
-                            self.board[row+i][col+j] = 1 
+                        if block_matrix[i][j] > 0:
+                            self.board[row+i][col+j] = color_val
                         j += 1
                         
                     i += 1
                 
         return out
         
-    def checkBoard(self) -> bool:
+    # handles clearing board and checking for available moves on the board
+    def endTurn(self, block: Block) -> bool:
         
         # clear rows
         clear_row = [0]*10
         for row in range(len(self.board)):
-            if row.count(0) == 0:
+            if self.board[row].count(0) == 0:
                 self.board[row] = clear_row
                 
         # clear cols
@@ -174,27 +212,40 @@ class Game:
                     for row in self.board:
                         row[i] = 0
         
-        block = self.p1Move[0]
+        block_matrix = block.matrix 
+        
         # check if there is an available move
         lose = True
         
-        for row in self.board:
-            for col in row:
-                if self.notOccupied(row,col,block):
+        for row in range(len(self.board)):
+            for col in range(len(self.board[row])):
+                if self.notOccupied(row,col,block_matrix):
                     lose = False
                     break  
         return lose            
     
     
 # testing game board  
-"""g = Game()
+"""pg.init()
+g = Game()
 b = Block(width=10,height=10)
 
 for i in b.matrix:
     print(i)  
 print("\n")
-g.placeBlock((3,4),b.matrix)
+g.placeBlock((0,0),b)
 for i in g.board:
-    print(i)"""
+    print(i)
     
 
+win = pg.display.set_mode((500,500))
+run = True
+surf = pg.surface.Surface((500,450))
+surf = g.drawBoard(surf)
+win.blit(surf,(0,0))
+while run:
+    for event in pg.event.get():
+        if event.type == pg.quit or event.type == pg.QUIT:
+            run = False
+    pg.display.update()
+"""

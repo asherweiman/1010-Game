@@ -42,24 +42,27 @@ def threaded_client2(conn, game: Game, block: Block, pos, player: int):
             else:    
                 print(pos)
                 
-                # turn has ended, player has placed block
+                # turn has possibly ended, player has tried to placed block
                 if data[2] == True:
                     
                     # valid block placement
-                    if game.placeBlock((data[1]//45, data[0]//50), block.matrix): 
+                    if game.placeBlock((data[1]//45, data[0]//50), block): 
                         
+                        # switch player turn and gen new block and color
                         game.player_turn = game.player_turn ^ 1
-                        block.matrix = block.genblock()
                         block.color = game.pickColor() 
-                       
-                    pos[0],pos[1] = default_x, default_y
-
+                        block.matrix = block.genblock()
+                    
+                    pos[0], pos[1] = default_x, default_y
+                    print("pos reset:", pos)
+                    
+                
                 # turn is ongoing
                 else:
                     
                     # update pos of block so other player knows
                     if game.player_turn == player:
-                        pos[0], pos[1] = data[0],data[1]
+                        pos[0], pos[1] = data[0], data[1]
                 
                 # assemblying the reply to send       
                 reply = [block.matrix, block.color, pos[0],pos[1], game.player_turn]
@@ -83,7 +86,8 @@ def threaded_client2(conn, game: Game, block: Block, pos, player: int):
     print("lost connection")
     conn.close()
     sys.exit()
-        
+
+# handles receiving packets with len of msg encoded at start    
 def recv_buf(s: socket.socket):
 
     buf = b''
@@ -96,7 +100,7 @@ def recv_buf(s: socket.socket):
     return pickle.loads(data)
  
  
-     
+# starts the socket 
 def startServer():
     server = "127.0.0.1" #"192.168.1.202" #"127.0.0.1" #"192.168.48.1"
     port = 8080
@@ -125,6 +129,7 @@ def startServer():
 
     block = Block(g.pickColor(), 0, 0)
     block.matrix = block.genblock()
+    threads = []
 
     while True: 
         print("waiting to accept")
@@ -134,14 +139,14 @@ def startServer():
             print("Connected to: ", addr)
         else:
             print("waiting to end")
-            t.join()
+            threads[0].join()
             break
         
-        t = threading.Thread(target=threaded_client2, args=(conn, g, block, pos, player_num))
-        t.start()
+        threads.append(threading.Thread(target=threaded_client2, args=(conn, g, block, pos, player_num)))
+        threads[-1].start()
         player_num += 1
         
-        
+      
     s.close()
 
 startServer()

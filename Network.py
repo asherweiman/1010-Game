@@ -14,7 +14,7 @@ class Network:
     def connect(self):
         try:
             # get length data from buffer
-            print("getting new msg")
+            
             buf = b''
             while len(buf) < 4:
                 buf += self.client.recv(4 - len(buf))

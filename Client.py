@@ -67,9 +67,15 @@ def main():
         # start of new turn
         if block_data[0] != startBlock.matrix:
             print("new turn")
+            placed_list.remove(startBlock)
             (x,y) = startBlock.rect.topleft
             game.placeBlock((y//45,x//50),startBlock)
+            for i in game.board:
+                print(i)
             lose_game = game.endTurn(startBlock)
+            print("\n\n")
+            for i in game.board:
+                print(i)
             #print(lose_game)
             game_board = game.drawBoard(game_board)
             startBlock =  Block(block_data[1],(width//10)*3,(height//10)*3, block_data[0],default_x,default_y)
@@ -120,8 +126,9 @@ def main():
         
         clock.tick(60)
         
+        #print("before recv")
         block_data = n.connect()
-        print(block_data)
+        #print(block_data)
         
         # handle invalid turns
         if end_turn and block_data[4] == player_num:

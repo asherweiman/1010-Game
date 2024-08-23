@@ -127,7 +127,6 @@ class Game:
         # draw blocks:
         for row in range(len(self.board)):
             for col in range(len(self.board)):
-                print("color: ", self.board[row][col])
                 pg.draw.rect(win,
                              self.color_pallete[self.board[row][col]],
                              pg.Rect((col*block_width,row*block_height),(block_width,block_height)))
@@ -150,7 +149,7 @@ class Game:
         out = True
         
         # outside of board
-        if row + len(block) > len(self.board) or col+ len(block) > len(self.board):
+        if row + len(block) > len(self.board) or col + len(block) > len(self.board):
             out = False 
         
         # inside of board
@@ -173,7 +172,7 @@ class Game:
         out = False
         (row,col) = top_left
         color_val = self.color_pallete.index(block.color)
-        print(row,col)
+        
         if (9 >= row >= 0) and (9 >= col>= 0):
             
             #print(self.notOccupied(row,col,block_matrix))
@@ -204,7 +203,7 @@ class Game:
         # clear cols
         for i in range(len(self.board[0])):
             clear = True
-            if self.board[0][i] == 1:
+            if self.board[0][i] > 0:
                 for row in self.board:
                     if row[i] == 0:
                         clear = False

@@ -47,7 +47,7 @@ def threaded_client2(conn, game: Game, block: Block, pos, player: int):
                     
                     # valid block placement
                     if game.placeBlock((data[1]//45, data[0]//50), block): 
-                        
+                        game.endTurn(block)
                         # switch player turn and gen new block and color
                         game.player_turn = game.player_turn ^ 1
                         block.color = game.pickColor() 

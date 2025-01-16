@@ -46,8 +46,11 @@ def main():
     game = Game()
     game_board = drawBoard(width, int(height*.9))
     win.blit(game_board,(0,0))
+    game.board = n.recv_msg()
+    game_board = game.drawBoard(game_board)
     
-    block_data = n.getBlock()
+    
+    block_data = n.recv_msg()
     print("here", block_data)
     startBlock = Block(block_data[1],(width//10)*3,(height//10)*3, block_data[0], default_x,default_y)
     
@@ -127,7 +130,7 @@ def main():
         clock.tick(60)
         
         #print("before recv")
-        block_data = n.connect()
+        block_data = n.recv_msg()
         #print(block_data)
         
         # handle invalid turns

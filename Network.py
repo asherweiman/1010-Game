@@ -9,12 +9,16 @@ class Network:
         self.port = 8080
         self.buffer_size = 2048
         self.addr = (self.server, self.port)
-        self.client.connect(self.addr)
+        try:
         
-    def connect(self):
+            self.client.connect(self.addr)
+        except socket.error as e:
+            print(e)
+        
+        
+    def recv_msg(self):
         try:
             # get length data from buffer
-            
             buf = b''
             while len(buf) < 4:
                 buf += self.client.recv(4 - len(buf))
@@ -35,8 +39,5 @@ class Network:
             self.client.sendall(packet)
         except socket.error as e:
             print(e)
-    
-    def getBlock(self):
-        return self.connect()
     
     

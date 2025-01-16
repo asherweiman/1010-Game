@@ -14,9 +14,13 @@ default_y = 450
 
 
 
-def threaded_client2(conn, game: Game, block: Block, pos, player: int):
+def client_thread(conn: socket.socket, game: Game, block: Block, pos, player: int):
     
-    # package info to send
+    
+    # send game board
+    send_game_board(game,conn)
+    
+    # send block and player number
     reply = [block.matrix,block.color, pos[0],pos[1],player]
     
     for i in block.matrix:
@@ -99,7 +103,13 @@ def recv_buf(s: socket.socket):
     
     return pickle.loads(data)
  
- 
+def send_game_board(g: Game, conn: socket.socket):
+    
+    packet = pickle.dumps(g.board)
+    length = pack('!I', len(packet))
+    packet = length + packet
+    conn.sendall(packet)
+    
 # starts the socket 
 def startServer():
     server = "127.0.0.1" #"192.168.1.202" #"127.0.0.1" #"192.168.48.1"
@@ -121,7 +131,7 @@ def startServer():
     s.listen(2)
     print("waiting for client, server started")
     
-    max_player = 3
+    max_player = 2
     player_num = 0
     g = Game()
 
@@ -134,7 +144,7 @@ def startServer():
     while True: 
         print("waiting to accept")
         print(threading.active_count())
-        if threading.active_count() < max_player:
+        if threading.active_count() - 1 < max_player:
             conn, addr = s.accept()
             print("Connected to: ", addr)
         else:
@@ -142,7 +152,7 @@ def startServer():
             threads[0].join()
             break
         
-        threads.append(threading.Thread(target=threaded_client2, args=(conn, g, block, pos, player_num)))
+        threads.append(threading.Thread(target=client_thread, args=(conn, g, block, pos, player_num)))
         threads[-1].start()
         player_num += 1
         

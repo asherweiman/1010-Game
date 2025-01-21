@@ -107,7 +107,7 @@ class Game:
                               (188,210,208),
                               (210,208,188),
                               (93,87,107)]  
-        self.player_turn = 0
+        self.player_turn = 1
 
     def connected(self):
         return self.ready

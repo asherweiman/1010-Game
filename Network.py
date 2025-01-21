@@ -1,24 +1,42 @@
 import socket
 import pickle
+#TODO timer for broadcast import time
 from struct import pack, unpack
 
 class Network:
     def __init__(self) -> None:
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server = ""#"192.168.1.1" #"192.168.48.1"
-        self.port = 8080
+        self.broadcast_socket: socket.socket = socket.socket|(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        local_ip = socket.gethostbyname(socket.gethostname())
         self.buffer_size = 2048
-        self.addr = (self.server, self.port)
-        try:
+        self.broadcast_port = 9090
+        self.broadcast_socket.bind((local_ip, self.broadcast_port))
+        self.broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.broadcast_socket.settimeout(1)
+        """try:
         
             self.client.connect(self.addr)
         except socket.error as e:
-            print(e)
+            print(e)"""
         
+    # broadcast for LAN discovery returns the server addr
+    def broadcast(self):
+        broadcast_addr = ("255.255.255.255", self.broadcast_port)
+        msg = b'this is a msg'
+        broadcasting = True
+        while broadcasting:
+            self.broadcast_socket.sendto(msg,broadcast_addr)
+            try:
+                data, addr = self.broadcast_socket.recvfrom(self.buffer_size)
+                #TODO check data integrity
+                return addr
+            except socket.timeout:
+                continue
         
+     
     def recv_msg(self):
         try:
-            # get length data from buffer
+            # get length of data from buffer
             buf = b''
             while len(buf) < 4:
                 buf += self.client.recv(4 - len(buf))

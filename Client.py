@@ -13,7 +13,7 @@ default_y = 450
 
 
     
-def drawBoard(width,height):
+def draw_board(width,height):
     surf = pygame.surface.Surface((width,height))
     
     white = (255,255,255)
@@ -32,7 +32,6 @@ def drawBoard(width,height):
         pygame.draw.line(surf, grey,start_pos=(0,i+row),end_pos=(width,i+row))
     
     return surf
-
  
 def main():
     #pygame.init()
@@ -44,7 +43,7 @@ def main():
     clock = pygame.time.Clock()
     
     game = Game()
-    game_board = drawBoard(width, int(height*.9))
+    game_board = draw_board(width, int(height*.9))
     win.blit(game_board,(0,0))
     game.board = n.recv_msg()
     game_board = game.drawBoard(game_board)
@@ -57,7 +56,7 @@ def main():
     pygame.display.set_caption(str(block_data[4]))
     
     player_num = block_data[4]
-    
+    print("I am: ", player_num)
     dragging_list = pygame.sprite.Group()
     
     placed_list = pygame.sprite.Group()

@@ -6,13 +6,16 @@ from struct import pack, unpack
 class Network:
     def __init__(self) -> None:
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.broadcast_socket: socket.socket = socket.socket|(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        local_ip = socket.gethostbyname(socket.gethostname())
+        self.broadcast_socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        local_ip = self.get_address()
         self.buffer_size = 2048
+        
         self.broadcast_port = 9090
+        print(f"broadcast binding to: {local_ip}, {self.broadcast_port}")
         self.broadcast_socket.bind((local_ip, self.broadcast_port))
         self.broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.broadcast_socket.settimeout(1)
+        self.broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         """try:
         
             self.client.connect(self.addr)
@@ -32,7 +35,16 @@ class Network:
                 return addr
             except socket.timeout:
                 continue
+    
+    def connect_LAN_server(self):
         
+        server_addr = self.broadcast()
+        
+        try:
+            self.client.connect(server_addr)
+            
+        except socket.error as e:
+            print(e)
      
     def recv_msg(self):
         try:
@@ -58,4 +70,8 @@ class Network:
         except socket.error as e:
             print(e)
     
-    
+    def get_address(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('4.2.2.1', 0))
+        addr = s.getsockname()[0]
+        return addr

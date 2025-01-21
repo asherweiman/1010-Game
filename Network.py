@@ -12,10 +12,16 @@ class Network:
         
         self.broadcast_port = 9090
         print(f"broadcast binding to: {local_ip}, {self.broadcast_port}")
-        self.broadcast_socket.bind((local_ip, self.broadcast_port))
-        self.broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        self.broadcast_socket.settimeout(1)
-        self.broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            self.broadcast_socket.bind((local_ip, self.broadcast_port))
+        
+            self.broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            self.broadcast_socket.settimeout(1)
+            self.broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        except socket.error as e:
+            print(e)
+        
+        
         """try:
         
             self.client.connect(self.addr)
@@ -24,24 +30,32 @@ class Network:
         
     # broadcast for LAN discovery returns the server addr
     def broadcast(self):
+        
         broadcast_addr = ("255.255.255.255", self.broadcast_port)
         msg = b'this is a msg'
         broadcasting = True
         while broadcasting:
-            self.broadcast_socket.sendto(msg,broadcast_addr)
             try:
+                print("Sending broadcast")
+                self.broadcast_socket.sendto(msg,broadcast_addr)
+                print("after broadcast")
                 data, addr = self.broadcast_socket.recvfrom(self.buffer_size)
                 #TODO check data integrity
                 return addr
+            except socket.error as e:
+                print("error in broadcasting: ", e)
+            
             except socket.timeout:
+                print("timeout")
                 continue
     
     def connect_LAN_server(self):
         
         server_addr = self.broadcast()
+        connection_addr = (server_addr[0], 8080)
         
         try:
-            self.client.connect(server_addr)
+            self.client.connect(connection_addr)
             
         except socket.error as e:
             print(e)

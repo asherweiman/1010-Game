@@ -37,7 +37,9 @@ def main():
     #pygame.init()
     run = True
     n = Network()
-    print("made network")
+    
+    print("connecting to LAN server")
+    n.connect_LAN_server()
     
     win = pygame.display.set_mode((width,height))
     clock = pygame.time.Clock()
@@ -47,7 +49,7 @@ def main():
     win.blit(game_board,(0,0))
     game.board = n.recv_msg()
     game_board = game.drawBoard(game_board)
-    
+
     
     block_data = n.recv_msg()
     print("here", block_data)

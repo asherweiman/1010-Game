@@ -127,7 +127,6 @@ def start_server():
     port = 8080
 
     broadcast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
     broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
     
     # Enable broadcasting mode

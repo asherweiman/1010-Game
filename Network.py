@@ -13,7 +13,7 @@ class Network:
         self.broadcast_port = 9090
         print(f"broadcast binding to: {local_ip}, {self.broadcast_port}")
         try:
-            self.broadcast_socket.bind((local_ip, self.broadcast_port))
+            self.broadcast_socket.bind((local_ip, 8080))
         
             self.broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             self.broadcast_socket.settimeout(1)
@@ -29,7 +29,7 @@ class Network:
             print(e)"""
         
     # broadcast for LAN discovery returns the server addr
-    def broadcast(self):
+    def LAN_discovery(self):
         
         broadcast_addr = ("255.255.255.255", self.broadcast_port)
         msg = b'this is a msg'
@@ -40,6 +40,9 @@ class Network:
                 self.broadcast_socket.sendto(msg,broadcast_addr)
                 print("after broadcast")
                 data, addr = self.broadcast_socket.recvfrom(self.buffer_size)
+                print(f"got a reply from: {addr} saying: {data}")
+                
+                
                 #TODO check data integrity
                 return addr
             except socket.error as e:
@@ -51,9 +54,9 @@ class Network:
     
     def connect_LAN_server(self):
         
-        server_addr = self.broadcast()
+        server_addr = self.LAN_discovery()
         connection_addr = (server_addr[0], 8080)
-        
+        print(connection_addr) 
         try:
             self.client.connect(connection_addr)
             

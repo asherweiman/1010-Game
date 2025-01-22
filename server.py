@@ -112,7 +112,7 @@ def send_game_board(g: Game, conn: socket.socket):
 def lan_reply(broadcats_socket: socket.socket, mask):
     
     client_msg, client_addr = broadcats_socket.recvfrom(CLIENT_MSG_SIZE)
-
+    print(f"client: {client_addr} wants to connect w/ msg: {client_msg}")
     #TODO check client msg here 
     
     # reply

@@ -22,7 +22,7 @@ class Block(pg.sprite.Sprite):
         self.draw_matrix()
         
         self.rect = self.image.get_rect()
-        self.rect.x = x
+        self.rect.x =x
         self.rect.y = y
         
     # draws block on sprite image surface
